@@ -15,3 +15,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "Hilt Binding"
 include(":app")
+include(":processor")
