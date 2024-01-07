@@ -6,13 +6,13 @@ import javax.inject.Inject
 
 @ContributesBinding(component = ActivityComponent::class)
 class AnnotationTest @Inject constructor() : Test {
-    override fun print(message: String) {
-        println(message)
+    override fun greeting(): String {
+        return "KSP"
     }
 }
 
 interface Test {
-    fun print(message: String)
+    fun greeting(): String
 }
 
 //@Module
