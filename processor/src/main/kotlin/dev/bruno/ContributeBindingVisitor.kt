@@ -5,10 +5,11 @@ import com.google.devtools.ksp.processing.CodeGenerator
 import com.google.devtools.ksp.processing.KSPLogger
 import com.google.devtools.ksp.symbol.KSAnnotation
 import com.google.devtools.ksp.symbol.KSClassDeclaration
+import com.google.devtools.ksp.symbol.KSType
 import com.google.devtools.ksp.symbol.KSVisitorVoid
+import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.ksp.toClassName
-import com.squareup.kotlinpoet.ksp.toTypeName
 import com.squareup.kotlinpoet.ksp.writeTo
 
 class ContributeBindingVisitor(
@@ -18,7 +19,7 @@ class ContributeBindingVisitor(
 
     override fun visitClassDeclaration(classDeclaration: KSClassDeclaration, data: Unit) {
         val annotation = getAnnotation(classDeclaration) ?: return
-        val component = annotation.arguments.component1().value!!
+        val component = resolveType(annotation.arguments.component1().value!!)
         val boundType = annotation.arguments.component2()
         val defaultArgument = annotation.defaultArguments.component1()
         val superTypesCount = classDeclaration.superTypes.count()
@@ -33,15 +34,15 @@ class ContributeBindingVisitor(
         }
 
         val boundTypeArg = if (superTypesCount > 1) {
-            BoundType(typeArg = boundType.value, typeName = null)
-        } else BoundType(typeName = firstSuperType.toTypeName(), typeArg = null)
+            BoundType(typeArg = resolveType(boundType.value!!), typeName = null)
+        } else BoundType(typeName = firstSuperType.toClassName(), typeArg = null)
 
         val fileSpec: FileSpec = bindingFileSpec(
             subtype = classDeclaration.asType(listOf()),
             componentArg = component,
             boundTypeArg = boundTypeArg,
             logger = logger,
-        ) ?: return
+        )
 
         fileSpec.writeTo(codeGenerator = codeGenerator, aggregating = false)
     }
@@ -56,5 +57,10 @@ class ContributeBindingVisitor(
             ksAnnotation = null
         }
         return ksAnnotation
+    }
+
+    private fun resolveType(arg: Any): ClassName {
+        val ksType = arg as KSType
+        return ksType.toClassName()
     }
 }

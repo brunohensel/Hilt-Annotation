@@ -11,15 +11,13 @@ import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.ksp.toClassName
 import com.squareup.kotlinpoet.ksp.toTypeName
-import dev.bruno.Utils.HiltComponentPackage
 
 internal fun bindingFileSpec(
     subtype: KSType,
     componentArg: Any,
     boundTypeArg: BoundType,
     logger: KSPLogger,
-): FileSpec? {
-    val hiltComponent: ClassName = resolveComponentFromArg(componentArg, logger) ?: return null
+): FileSpec {
     val subtypeClassName = subtype.toClassName().topLevelClassName()
     val moduleName = ClassName(
         packageName = subtypeClassName.packageName,
@@ -36,7 +34,7 @@ internal fun bindingFileSpec(
         .addAnnotation(Utils.DAGGER_MODULE)
         .addAnnotation(
             AnnotationSpec.builder(Utils.INSTALL_IN)
-                .addMember("%T::class", hiltComponent)
+                .addMember("%T::class", componentArg)
                 .build()
         )
         .addAnnotation(
@@ -55,21 +53,6 @@ internal fun bindingFileSpec(
         )
         .build()
     return FileSpec.builder(moduleName).addType(hiltModuleSpec).build()
-}
-
-private fun resolveComponentFromArg(componentArg: Any, logger: KSPLogger): ClassName? {
-    val component = HiltComponent.entries.firstOrNull { it.name == componentArg.toString() }
-    if (component == null) {
-        logger.exception(
-            IllegalArgumentException(
-                """$componentArg in not a Hilt component.
-             it must be one of the following ${HiltComponent.entries}
-            """.trimIndent()
-            )
-        )
-        return null
-    }
-    return ClassName(HiltComponentPackage, component.name)
 }
 
 private fun FunSpec.Builder.applyReturn(boundTypeArg: Any?, typeName: TypeName?): FunSpec.Builder {
