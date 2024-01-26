@@ -41,7 +41,6 @@ class ContributeBindingVisitor(
             subtype = classDeclaration.asType(listOf()),
             componentArg = component,
             boundTypeArg = boundTypeArg,
-            logger = logger,
         )
 
         fileSpec.writeTo(codeGenerator = codeGenerator, aggregating = false)
@@ -54,7 +53,6 @@ class ContributeBindingVisitor(
                 ksAnnotation = annotation
                 break
             }
-            ksAnnotation = null
         }
         return ksAnnotation
     }

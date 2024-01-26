@@ -1,6 +1,5 @@
 package dev.bruno
 
-import com.google.devtools.ksp.processing.KSPLogger
 import com.google.devtools.ksp.symbol.KSType
 import com.squareup.kotlinpoet.AnnotationSpec
 import com.squareup.kotlinpoet.ClassName
@@ -16,7 +15,6 @@ internal fun bindingFileSpec(
     subtype: KSType,
     componentArg: Any,
     boundTypeArg: BoundType,
-    logger: KSPLogger,
 ): FileSpec {
     val subtypeClassName = subtype.toClassName().topLevelClassName()
     val moduleName = ClassName(
