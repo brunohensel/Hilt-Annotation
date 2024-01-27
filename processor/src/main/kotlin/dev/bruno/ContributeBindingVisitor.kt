@@ -1,6 +1,5 @@
 package dev.bruno
 
-import com.google.devtools.ksp.getAllSuperTypes
 import com.google.devtools.ksp.processing.CodeGenerator
 import com.google.devtools.ksp.processing.KSPLogger
 import com.google.devtools.ksp.symbol.KSAnnotation
@@ -22,10 +21,15 @@ class ContributeBindingVisitor(
         val component = resolveType(annotation.arguments.component1().value!!)
         val boundType = annotation.arguments.component2()
         val defaultArgument = annotation.defaultArguments.component1()
-        val superTypesCount = classDeclaration.superTypes.count()
-        val firstSuperType = classDeclaration.getAllSuperTypes().first()
+        val superTypes = classDeclaration.superTypes
+        val superTypesCount = superTypes.count()
+        val firstSuperType = superTypes.firstOrNull()?.resolve()
+            ?: throw IllegalStateException(
+                "A class annotated with @ContributesBinding should implement at least one interface"
+            )
 
         if (superTypesCount > 1 && boundType == defaultArgument) {
+            // we could throw an exception here as well
             logger.exception(
                 IllegalArgumentException(
                     "There are more than one super type declared without any bounded type declaration "
