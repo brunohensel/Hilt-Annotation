@@ -16,17 +16,17 @@ class BindingProcessor(
 ) : SymbolProcessor {
     override fun process(resolver: Resolver): List<KSAnnotated> {
         val symbols = resolver.getSymbolsWithAnnotation(Utils.CONTRIBUTES_BINDING.canonicalName)
-        val invalid = symbols.filter { !it.validate() }.toList()
+        val (validSymbols, invalidSymbols) = symbols.partition { it.validate() }
 
-        for (symbol in symbols) {
-            if (symbol is KSClassDeclaration && symbol.validate()) {
+        for (symbol in validSymbols) {
+            if (symbol is KSClassDeclaration) {
                 symbol.accept(
                     visitor = ContributeBindingVisitor(codeGenerator, logger),
                     data = Unit
                 )
             }
         }
-        return invalid
+        return invalidSymbols
     }
 }
 
